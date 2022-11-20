@@ -14,7 +14,7 @@ public class Player  extends  User{
         super(name);
     }
 
-    public boolean CanPlay() {
+    public boolean canPlay() {
         return canPlay;
     }
 

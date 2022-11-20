@@ -2,8 +2,8 @@ import java.util.Objects;
 
 public class Tie {
     private User master;
-    private int x;
-    private int y;
+    private final int x;
+    private final int y;
 
     private boolean isWhite;
 
