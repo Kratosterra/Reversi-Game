@@ -1,6 +1,6 @@
 public class AI extends User{
     private boolean isPro;
-    private boolean canPlay;
+    private boolean canPlay = true;
 
     public AI(String name, boolean isPro) {
         super(name);
@@ -13,7 +13,7 @@ public class AI extends User{
         } else {
 
         }
-        return new Tie(this, 1, 1);
+        return null;
     }
 
     public boolean CanPlay() {
