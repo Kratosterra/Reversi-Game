@@ -1,27 +1,30 @@
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 public class Board {
     static private final int[] DIRECTIOS = {-1, -1, -1,  0, -1, 1, 0, -1, 0, 1, 1, -1, 1, 0, 1, 1};
 
+    public void setBoard(Tie[][] board) {
+        this.board = board;
+    }
+
     private Tie[][] board = new Tie[8][8];
-    private int score_user;
-    private int score_enemy;
+    private int scoreUser;
+    private int scoreEnemy;
 
     public Board(User first, User second) {
-        this.score_enemy = 2;
-        this.score_user = 2;
+        this.scoreEnemy = 2;
+        this.scoreUser = 2;
 
         board[3][4] = new Tie(first, 3, 4);
         board[4][3] = new Tie(first, 4, 3);
         board[3][3] = new Tie(second, 3, 3);
         board[4][4] = new Tie(second, 4, 4);
-        CountPoints();
+        countPoints();
     }
 
 
-    public void PrintBoard() {
+    public void printBoard() {
         int y = 0;
         StringBuilder str = new StringBuilder();
         str.append("Y\\X 1   2   3   4   5   6   7   8 \n ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
@@ -33,7 +36,7 @@ public class Board {
                 if (tie == null) {
                     str.append(" ");
                 } else {
-                    str.append(tie.toString());
+                    str.append(tie);
                 }
                 str.append(" |");
             }
@@ -41,24 +44,24 @@ public class Board {
             y++;
         }
 
-        System.out.println(str.toString());
+        System.out.println(str);
     }
 
-    public void PrintBoardWithPossibleTurns(User player) {
-        int[][] ties = GetPossiblePlaces(player);
-        PrintBoardWithPossibilities(ties);
+    public void printBoardWithPossibleTurns(User player) {
+        int[][] ties = getPossiblePlaces(player);
+        printBoardWithPossibilities(ties);
     }
 
 
-    private int[][] GetAllNeighbors(boolean isForEnemy) {
+    private int[][] getAllNeighbors(boolean isForEnemy) {
         int[][] ties = new int[8][8];
         for (Tie[] row: board) {
             for (Tie tie: row) {
                 if (tie != null) {
                     if (isForEnemy) {
-                        ties = CheckNeighbors(tie, !tie.isWhite(), ties);
+                        ties = checkNeighbors(tie, !tie.isWhite(), ties);
                     } else {
-                        ties = CheckNeighbors(tie, tie.isWhite(), ties);
+                        ties = checkNeighbors(tie, tie.isWhite(), ties);
                     }
 
                 }
@@ -67,7 +70,7 @@ public class Board {
         return ties;
     }
 
-    private int[][] CheckNeighbors(Tie tie, boolean type, int[][] ties) {
+    private int[][] checkNeighbors(Tie tie, boolean type, int[][] ties) {
         if (type) {
             int x = tie.getX();
             int y = tie.getY();
@@ -86,23 +89,23 @@ public class Board {
         return ties;
     }
 
-    public int[][] GetPossiblePlaces(User player) {
+    public int[][] getPossiblePlaces(User player) {
         int[][] ties;
         if ((Objects.equals(player.getName(), "Player 2")) || (player instanceof AI)) {
-            ties =  GetAllNeighbors(true);
-            GetOnlyValidNeighbors(ties, true);
+            ties =  getAllNeighbors(true);
+            getOnlyValidNeighbors(ties, true);
         } else {
-            ties = GetAllNeighbors(false);
-            GetOnlyValidNeighbors(ties, false);
+            ties = getAllNeighbors(false);
+            getOnlyValidNeighbors(ties, false);
         }
         return ties;
     }
 
-    private void GetOnlyValidNeighbors(int[][] ties, boolean IsForEnemy) {
+    private void getOnlyValidNeighbors(int[][] ties, boolean IsForEnemy) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (ties[i][j] == 1) {
-                    if (CheckOnDiagonales(i, j, ties, IsForEnemy) || CheckOnVertical(i, j, ties, IsForEnemy)) {
+                    if (checkOnDiagonales(i, j, IsForEnemy) || checkOnVertical(i, j, IsForEnemy)) {
                         ties[i][j] = 1;
                     } else {
                         ties[i][j] = 0;
@@ -112,17 +115,17 @@ public class Board {
         }
     }
 
-    private boolean CheckOnDiagonales(int x, int y, int[][] ties, boolean IsForEnemy) {
-        return CheckLine(x, y, ties, -1, -1, IsForEnemy) || CheckLine(x, y, ties, 1, 1, IsForEnemy) ||
-                CheckLine(x, y, ties, 1, -1, IsForEnemy) || CheckLine(x, y, ties, -1, 1, IsForEnemy);
+    private boolean checkOnDiagonales(int x, int y, boolean IsForEnemy) {
+        return checkLine(x, y, -1, -1, IsForEnemy) || checkLine(x, y, 1, 1, IsForEnemy) ||
+                checkLine(x, y, 1, -1, IsForEnemy) || checkLine(x, y, -1, 1, IsForEnemy);
     }
 
-    private boolean CheckOnVertical(int x, int y, int[][] ties, boolean IsForEnemy) {
-        return CheckLine(x, y, ties, -1, 0, IsForEnemy) || CheckLine(x, y, ties, 0, -1, IsForEnemy) ||
-                CheckLine(x, y, ties, 1, 0, IsForEnemy) || CheckLine(x, y, ties, 0, 1, IsForEnemy);
+    private boolean checkOnVertical(int x, int y, boolean IsForEnemy) {
+        return checkLine(x, y, -1, 0, IsForEnemy) || checkLine(x, y, 0, -1, IsForEnemy) ||
+                checkLine(x, y, 1, 0, IsForEnemy) || checkLine(x, y, 0, 1, IsForEnemy);
     }
 
-    private boolean CheckLine(int x, int y, int[][] ties, int forX, int forY, boolean IsForEnemy) {
+    private boolean checkLine(int x, int y, int forX, int forY, boolean IsForEnemy) {
         int x_ = x;
         int y_ = y;
         x_ += forX;
@@ -149,7 +152,7 @@ public class Board {
         return (coordinates.size() > 0) && flag;
     }
 
-    public void PrintBoardWithPossibilities(int[][] ties) {
+    public void printBoardWithPossibilities(int[][] ties) {
         StringBuilder str = new StringBuilder();
         int x = 0;
         int y = 0;
@@ -162,7 +165,7 @@ public class Board {
                 if (tie == null) {
                     str.append(ties[x][y] == 1 ? "□" : " ");
                 } else {
-                    str.append(tie.toString());
+                    str.append(tie);
                 }
                 str.append(" |");
                 y += 1;
@@ -172,59 +175,55 @@ public class Board {
             x += 1;
         }
 
-        System.out.println(str.toString());
+        System.out.println(str);
     }
 
-    public int getScore_user() {
-        return score_user;
-    }
-
-    public int getScore_enemy() {
-        return score_enemy;
+    public int getScoreUser() {
+        return scoreUser;
     }
 
     public Tie[][] getBoard() {
         return board;
     }
 
-    public void SetTurnWithTie(Tie tie, User player) {
+    public void setTurnWithTie(Tie tie, User player) {
         board[tie.getX()][tie.getY()] = tie;
-        TurnTies(tie, player);
-        CountPoints();
+        turnTies(tie, player);
+        countPoints();
     }
 
-    private void CountPoints() {
-        score_user = 0;
-        score_enemy = 0;
+    private void countPoints() {
+        scoreUser = 0;
+        scoreEnemy = 0;
         for (Tie[] row: board) {
             for (Tie tie: row) {
                 if (tie != null) {
                     if (tie.isWhite()) {
-                        score_enemy += 1;
+                        scoreEnemy += 1;
                     } else {
-                        score_user += 1;
+                        scoreUser += 1;
                     }
                 }
             }
         }
     }
 
-    private void TurnTies(Tie tie, User player) {
+    private void turnTies(Tie tie, User player) {
         int x = tie.getX();
         int y = tie.getY();
 
-        TurnLine(x, y, player, tie.isWhite(), -1, -1);
-        TurnLine(x, y, player, tie.isWhite(), 1, -1);
-        TurnLine(x, y, player, tie.isWhite(), 1, 1);
-        TurnLine(x, y, player, tie.isWhite(), -1, 1);
+        turnLine(x, y, player, tie.isWhite(), -1, -1);
+        turnLine(x, y, player, tie.isWhite(), 1, -1);
+        turnLine(x, y, player, tie.isWhite(), 1, 1);
+        turnLine(x, y, player, tie.isWhite(), -1, 1);
 
-        TurnLine(x, y, player, tie.isWhite(), 0, -1);
-        TurnLine(x, y, player, tie.isWhite(), 0, 1);
-        TurnLine(x, y, player, tie.isWhite(), 1, 0);
-        TurnLine(x, y, player, tie.isWhite(), -1, 0);
+        turnLine(x, y, player, tie.isWhite(), 0, -1);
+        turnLine(x, y, player, tie.isWhite(), 0, 1);
+        turnLine(x, y, player, tie.isWhite(), 1, 0);
+        turnLine(x, y, player, tie.isWhite(), -1, 0);
     }
 
-    private void TurnLine(int x, int y, User player, boolean isWhite, int forX, int forY) {
+    private void turnLine(int x, int y, User player, boolean isWhite, int forX, int forY) {
         int x_ = x;
         int y_ = y;
         x_ += forX;
@@ -255,41 +254,41 @@ public class Board {
         }
     }
 
-    public boolean IsPlayable() {
-        CountPoints();
-        return (score_user + score_enemy < 64) && (score_enemy != 0) && (score_user != 0);
+    public boolean isPlayable() {
+        countPoints();
+        return (scoreUser + scoreEnemy < 64) && (scoreEnemy != 0) && (scoreUser != 0);
     }
 
-    public void PrintWinner(User player, User player2) {
-        if (score_enemy == score_user) {
+    public void printWinner(User player2) {
+        if (scoreEnemy == scoreUser) {
             if ((Objects.equals(player2.getName(), "Player 2"))) {
                 System.out.println("              Ничья!\n★★★★★★★★★★★★★★★★★★★★★★★★★★★★\n");
-                System.out.printf("Игрок 1: %s                ", score_user);
-                System.out.printf("Игрок 2: %s          \n", score_enemy);
+                System.out.printf("Игрок 1: %s                ", scoreUser);
+                System.out.printf("Игрок 2: %s          \n", scoreEnemy);
             } else if ((player2 instanceof AI)) {
                 System.out.println("              Ничья!\n★★★★★★★★★★★★★★★★★★★★★★★★★★★★\n");
-                System.out.printf("Игрок 1: %s                ", score_user);
-                System.out.printf("Компьютер: %s          \n", score_enemy);
+                System.out.printf("Игрок 1: %s                ", scoreUser);
+                System.out.printf("Компьютер: %s          \n", scoreEnemy);
             }
-        } else if (score_enemy > score_user) {
+        } else if (scoreEnemy > scoreUser) {
             if ((Objects.equals(player2.getName(), "Player 2"))) {
                 System.out.println("           Выйграл Игрок 2!\n★★★★★★★★★★★★★★★★★★★★★★★★★★★★\n");
-                System.out.printf("Игрок 1: %s                ", score_user);
-                System.out.printf("Игрок 2: %s          \n", score_enemy);
+                System.out.printf("Игрок 1: %s                ", scoreUser);
+                System.out.printf("Игрок 2: %s          \n", scoreEnemy);
             } else if ((player2 instanceof AI)) {
                 System.out.println("           Выйграл Компьютер!\n★★★★★★★★★★★★★★★★★★★★★★★★★★★★\n");
-                System.out.printf("Игрок 1: %s                ", score_user);
-                System.out.printf("Компьютер: %s         \n", score_enemy);
+                System.out.printf("Игрок 1: %s                ", scoreUser);
+                System.out.printf("Компьютер: %s         \n", scoreEnemy);
             }
         } else {
             if ((Objects.equals(player2.getName(), "Player 2"))) {
                 System.out.println("           Выйграл Игрок 1!\n★★★★★★★★★★★★★★★★★★★★★★★★★★★★\n");
-                System.out.printf("Игрок 1: %s                ", score_user);
-                System.out.printf("Игрок 2: %s          \n", score_enemy);
+                System.out.printf("Игрок 1: %s                ", scoreUser);
+                System.out.printf("Игрок 2: %s          \n", scoreEnemy);
             } else if ((player2 instanceof AI)) {
                 System.out.println("           Выйграл Игрок 1!\n★★★★★★★★★★★★★★★★★★★★★★★★★★★★\n");
-                System.out.printf("Игрок 1: %s                ", score_user);
-                System.out.printf("Компьютер: %s         \n", score_enemy);
+                System.out.printf("Игрок 1: %s                ", scoreUser);
+                System.out.printf("Компьютер: %s         \n", scoreEnemy);
             }
         }
         System.out.println("\n★★★★★★★★★★★★★★★★★★★★★★★★★★★★\n");
