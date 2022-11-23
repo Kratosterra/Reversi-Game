@@ -4,10 +4,6 @@ import java.util.Objects;
 public class Board {
     static private final int[] DIRECTIOS = {-1, -1, -1,  0, -1, 1, 0, -1, 0, 1, 1, -1, 1, 0, 1, 1};
 
-    public void setBoard(Tie[][] board) {
-        this.board = board;
-    }
-
     private Tie[][] board = new Tie[8][8];
     private int scoreUser;
     private int scoreEnemy;
@@ -23,28 +19,22 @@ public class Board {
         countPoints();
     }
 
+    public int getScoreUser() {
+        return scoreUser;
+    }
 
-    public void printBoard() {
-        int y = 0;
-        StringBuilder str = new StringBuilder();
-        str.append("Y\\X 1   2   3   4   5   6   7   8 \n ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
-        for (Tie[] row: board) {
-            str.append(y+1);
-            str.append("| ");
-            for (Tie tie: row) {
-                str.append(" ");
-                if (tie == null) {
-                    str.append(" ");
-                } else {
-                    str.append(tie);
-                }
-                str.append(" |");
-            }
-            str.append("\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
-            y++;
-        }
+    public Tie[][] getBoard() {
+        return board;
+    }
 
-        System.out.println(str);
+    public void setBoard(Tie[][] board) {
+        this.board = board;
+    }
+
+    public void setTurnWithTie(Tie tie, User player) {
+        board[tie.getX()][tie.getY()] = tie;
+        turnTies(tie, player);
+        countPoints();
     }
 
     public void printBoardWithPossibleTurns(User player) {
@@ -152,46 +142,6 @@ public class Board {
         return (coordinates.size() > 0) && flag;
     }
 
-    public void printBoardWithPossibilities(int[][] ties) {
-        StringBuilder str = new StringBuilder();
-        int x = 0;
-        int y = 0;
-        str.append("Y\\X 1   2   3   4   5   6   7   8 \n ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
-        for (Tie[] row: board) {
-            str.append(x+1);
-            str.append("| ");
-            for (Tie tie: row) {
-                str.append(" ");
-                if (tie == null) {
-                    str.append(ties[x][y] == 1 ? "□" : " ");
-                } else {
-                    str.append(tie);
-                }
-                str.append(" |");
-                y += 1;
-            }
-            y = 0;
-            str.append("\n ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
-            x += 1;
-        }
-
-        System.out.println(str);
-    }
-
-    public int getScoreUser() {
-        return scoreUser;
-    }
-
-    public Tie[][] getBoard() {
-        return board;
-    }
-
-    public void setTurnWithTie(Tie tie, User player) {
-        board[tie.getX()][tie.getY()] = tie;
-        turnTies(tie, player);
-        countPoints();
-    }
-
     private void countPoints() {
         scoreUser = 0;
         scoreEnemy = 0;
@@ -257,6 +207,55 @@ public class Board {
     public boolean isPlayable() {
         countPoints();
         return (scoreUser + scoreEnemy < 64) && (scoreEnemy != 0) && (scoreUser != 0);
+    }
+
+    public void printBoard() {
+        int y = 0;
+        StringBuilder str = new StringBuilder();
+        str.append("Y\\X 1   2   3   4   5   6   7   8 \n ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
+        for (Tie[] row: board) {
+            str.append(y+1);
+            str.append("| ");
+            for (Tie tie: row) {
+                str.append(" ");
+                if (tie == null) {
+                    str.append(" ");
+                } else {
+                    str.append(tie);
+                }
+                str.append(" |");
+            }
+            str.append("\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
+            y++;
+        }
+
+        System.out.println(str);
+    }
+
+    public void printBoardWithPossibilities(int[][] ties) {
+        StringBuilder str = new StringBuilder();
+        int x = 0;
+        int y = 0;
+        str.append("Y\\X 1   2   3   4   5   6   7   8 \n ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
+        for (Tie[] row: board) {
+            str.append(x+1);
+            str.append("| ");
+            for (Tie tie: row) {
+                str.append(" ");
+                if (tie == null) {
+                    str.append(ties[x][y] == 1 ? "□" : " ");
+                } else {
+                    str.append(tie);
+                }
+                str.append(" |");
+                y += 1;
+            }
+            y = 0;
+            str.append("\n ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n");
+            x += 1;
+        }
+
+        System.out.println(str);
     }
 
     public void printWinner(User player2) {

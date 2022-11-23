@@ -20,7 +20,7 @@ public class AI extends User{
     }
 
     private Tie getFinaleTieEasy(Board board, Tie finaleTie) {
-        double max_R = -1.0;
+        double max_R = -10.0;
 
         ArrayList<Tie> listOfPossibleTurns = new ArrayList<>();
         int[][] ties = board.getPossiblePlaces(this);
@@ -51,7 +51,7 @@ public class AI extends User{
     }
 
     private Tie getFinaleTiePro(Board board, User player, Tie finaleTie) {
-        double max_R = -1.0;
+        double max_R = -10.0;
 
         ArrayList<Tie> listOfPossibleTurns = new ArrayList<>();
         int[][] ties = board.getPossiblePlaces(this);
@@ -81,8 +81,8 @@ public class AI extends User{
         for (int i = 0; i < b.getBoard().length; i++) {
             for (int j = 0; j < b.getBoard()[i].length; j++) {
                 if (b.getBoard()[i][j] != null) {
-                   newTie[i][j] =
-                           new Tie(b.getBoard()[i][j].getMaster(), b.getBoard()[i][j].getX(), b.getBoard()[i][j].getY());
+                    newTie[i][j] =
+                            new Tie(b.getBoard()[i][j].getMaster(), b.getBoard()[i][j].getX(), b.getBoard()[i][j].getY());
                 }
             }
         }
