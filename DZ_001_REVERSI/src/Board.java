@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class Board {
-    static private final int[] DIRECTIOS = {-1, -1, -1,  0, -1, 1, 0, -1, 0, 1, 1, -1, 1, 0, 1, 1};
+    static private final int[] DIRECTIONS = {-1, -1, -1,  0, -1, 1, 0, -1, 0, 1, 1, -1, 1, 0, 1, 1};
 
     private Tie[][] board = new Tie[8][8];
     private int scoreUser;
@@ -65,8 +65,8 @@ public class Board {
             int x = tie.getX();
             int y = tie.getY();
             for (int i = 0; i < 16; i+=2) {
-                x += DIRECTIOS[i];
-                y += DIRECTIOS[i+1];
+                x += DIRECTIONS[i];
+                y += DIRECTIONS[i+1];
                 if (x >= 0 && y >= 0 && x < 8 && y < 8) {
                     if (board[x][y] == null) {
                         ties[x][y] = 1;
@@ -91,11 +91,11 @@ public class Board {
         return ties;
     }
 
-    private void getOnlyValidNeighbors(int[][] ties, boolean IsForEnemy) {
+    private void getOnlyValidNeighbors(int[][] ties, boolean isForEnemy) {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (ties[i][j] == 1) {
-                    if (checkOnDiagonales(i, j, IsForEnemy) || checkOnVertical(i, j, IsForEnemy)) {
+                    if (checkOnDiagonals(i, j, isForEnemy) || checkOnVertical(i, j, isForEnemy)) {
                         ties[i][j] = 1;
                     } else {
                         ties[i][j] = 0;
@@ -105,41 +105,41 @@ public class Board {
         }
     }
 
-    private boolean checkOnDiagonales(int x, int y, boolean IsForEnemy) {
-        return checkLine(x, y, -1, -1, IsForEnemy) || checkLine(x, y, 1, 1, IsForEnemy) ||
-                checkLine(x, y, 1, -1, IsForEnemy) || checkLine(x, y, -1, 1, IsForEnemy);
+    private boolean checkOnDiagonals(int x, int y, boolean isForEnemy) {
+        return checkLine(x, y, -1, -1, isForEnemy) || checkLine(x, y, 1, 1, isForEnemy) ||
+                checkLine(x, y, 1, -1, isForEnemy) || checkLine(x, y, -1, 1, isForEnemy);
     }
 
-    private boolean checkOnVertical(int x, int y, boolean IsForEnemy) {
-        return checkLine(x, y, -1, 0, IsForEnemy) || checkLine(x, y, 0, -1, IsForEnemy) ||
-                checkLine(x, y, 1, 0, IsForEnemy) || checkLine(x, y, 0, 1, IsForEnemy);
+    private boolean checkOnVertical(int x, int y, boolean isForEnemy) {
+        return checkLine(x, y, -1, 0, isForEnemy) || checkLine(x, y, 0, -1, isForEnemy) ||
+                checkLine(x, y, 1, 0, isForEnemy) || checkLine(x, y, 0, 1, isForEnemy);
     }
 
-    private boolean checkLine(int x, int y, int forX, int forY, boolean IsForEnemy) {
-        int x_ = x;
-        int y_ = y;
-        x_ += forX;
-        y_ += forY;
-        boolean flag = false;
+    private boolean checkLine(int x, int y, int offsetX, int offsetY, boolean isForEnemy) {
+        int xCoordinate = x;
+        int yCoordinate = y;
+        xCoordinate += offsetX;
+        yCoordinate += offsetY;
+        boolean isAllyFound = false;
         ArrayList<Integer> coordinates = new ArrayList<>();
-        if (x_ >= 0 && y_ >= 0 && x_ < 8 && y_ < 8) {
-            while (x_ >= 0 && y_ >= 0 && x_ < 8 && y_ < 8) {
-                if (this.board[x_][y_] == null) {
+        if (xCoordinate >= 0 && yCoordinate >= 0 && xCoordinate < 8 && yCoordinate < 8) {
+            while (xCoordinate >= 0 && yCoordinate >= 0 && xCoordinate < 8 && yCoordinate < 8) {
+                if (this.board[xCoordinate][yCoordinate] == null) {
                     return false;
                 }
-                if (board[x_][y_].isWhite() == !IsForEnemy) {
-                    coordinates.add(x_);
-                    coordinates.add(y_);
+                if (board[xCoordinate][yCoordinate].isWhite() == !isForEnemy) {
+                    coordinates.add(xCoordinate);
+                    coordinates.add(yCoordinate);
                 }
-                if (board[x_][y_].isWhite() == IsForEnemy) {
-                    flag = true;
+                if (board[xCoordinate][yCoordinate].isWhite() == isForEnemy) {
+                    isAllyFound = true;
                     break;
                 }
-                x_ += forX;
-                y_ += forY;
+                xCoordinate += offsetX;
+                yCoordinate += offsetY;
             }
         }
-        return (coordinates.size() > 0) && flag;
+        return (coordinates.size() > 0) && isAllyFound;
     }
 
     private void countPoints() {
@@ -173,31 +173,31 @@ public class Board {
         turnLine(x, y, player, tie.isWhite(), -1, 0);
     }
 
-    private void turnLine(int x, int y, User player, boolean isWhite, int forX, int forY) {
-        int x_ = x;
-        int y_ = y;
-        x_ += forX;
-        y_ += forY;
-        boolean flag = false;
+    private void turnLine(int x, int y, User player, boolean isWhite, int offsetX, int offsetY) {
+        int xCoordinate = x;
+        int yCoordinate = y;
+        xCoordinate += offsetX;
+        yCoordinate += offsetY;
+        boolean isAllyFound = false;
         ArrayList<Integer> coordinatesToTurn = new ArrayList<>();
-        if (x_ >= 0 && y_ >= 0 && x_ < 8 && y_ < 8) {
-            while (x_ >= 0 && y_ >= 0 && x_ < 8 && y_ < 8) {
-                if (board[x_][y_] == null) {
+        if (xCoordinate >= 0 && yCoordinate >= 0 && xCoordinate < 8 && yCoordinate < 8) {
+            while (xCoordinate >= 0 && yCoordinate >= 0 && xCoordinate < 8 && yCoordinate < 8) {
+                if (board[xCoordinate][yCoordinate] == null) {
                     return;
                 }
-                if (board[x_][y_].isWhite() == isWhite) {
-                    flag = true;
+                if (board[xCoordinate][yCoordinate].isWhite() == isWhite) {
+                    isAllyFound = true;
                     break;
                 }
-                if (board[x_][y_].isWhite() == !isWhite) {
-                    coordinatesToTurn.add(x_);
-                    coordinatesToTurn.add(y_);
+                if (board[xCoordinate][yCoordinate].isWhite() == !isWhite) {
+                    coordinatesToTurn.add(xCoordinate);
+                    coordinatesToTurn.add(yCoordinate);
                 }
-                x_ += forX;
-                y_ += forY;
+                xCoordinate += offsetX;
+                yCoordinate += offsetY;
             }
         }
-        if (flag) {
+        if (isAllyFound) {
             for (int i = 0; i < coordinatesToTurn.size(); i += 2) {
                 board[coordinatesToTurn.get(i)][coordinatesToTurn.get(i+1)].setNewMaster(player);
             }

@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 
 public class AI extends User{
+
+    static private final double MIN_R = -10.0;
+
     private final boolean isPro;
     private boolean canPlay = true;
 
@@ -10,18 +13,18 @@ public class AI extends User{
     }
 
     public Tie makeTurn(Board board, User player) {
-        Tie finaleTie = null;
+        Tie finaleTie;
         if (isPro) {
-            finaleTie = getFinaleTiePro(board, player, finaleTie);
+            finaleTie = getFinaleTiePro(board, player);
         } else {
-            finaleTie = getFinaleTieEasy(board, finaleTie);
+            finaleTie = getFinaleTieEasy(board);
         }
         return finaleTie;
     }
 
-    private Tie getFinaleTieEasy(Board board, Tie finaleTie) {
-        double max_R = -10.0;
-
+    private Tie getFinaleTieEasy(Board board) {
+        Tie finaleTie = null;
+        double maxR = MIN_R;
         ArrayList<Tie> listOfPossibleTurns = new ArrayList<>();
         int[][] ties = board.getPossiblePlaces(this);
         for (int i = 0; i < ties.length; i++) {
@@ -32,9 +35,9 @@ public class AI extends User{
             }
         }
         for (Tie point: listOfPossibleTurns) {
-            double R = getInfoForClosedTies(board, point);
-            if (R > max_R) {
-                max_R = R;
+            double r = getInfoForClosedTies(board, point);
+            if (r > maxR) {
+                maxR = r;
                 finaleTie = point;
             }
         }
@@ -44,15 +47,14 @@ public class AI extends User{
     private double getInfoForClosedTies(Board board, Tie point) {
         ArrayList<Tie> closedTies = new ArrayList<>();
         getClosedTies(closedTies, point, board);
-        double ss = evaluateTie(point);
         ArrayList<Double> sList = new ArrayList<>();
         evaluateClosedTies(sList, closedTies);
-        return getSumOf(sList) + ss;
+        return getSumOf(sList) + evaluateTie(point);
     }
 
-    private Tie getFinaleTiePro(Board board, User player, Tie finaleTie) {
-        double max_R = -10.0;
-
+    private Tie getFinaleTiePro(Board board, User player) {
+        Tie finaleTie = null;
+        double maxR = MIN_R;
         ArrayList<Tie> listOfPossibleTurns = new ArrayList<>();
         int[][] ties = board.getPossiblePlaces(this);
         for (int i = 0; i < ties.length; i++) {
@@ -64,31 +66,32 @@ public class AI extends User{
         }
         for (Tie point: listOfPossibleTurns) {
             getInfoForClosedTies(board, point);
-            double R = getInfoForClosedTies(board, point);
-            double R_player = getEnemyFunctionR(board, point, player);
-            R -= R_player;
-            if (R > max_R) {
-                max_R = R;
+            double r = getInfoForClosedTies(board, point);
+            double rPlayer = getEnemyFunctionR(board, point, player);
+            r -= rPlayer;
+            if (r > maxR) {
+                maxR = r;
                 finaleTie = point;
             }
         }
         return finaleTie;
     }
 
-    private double getEnemyFunctionR(Board b, Tie point, User player) {
+    private double getEnemyFunctionR(Board oldBoard, Tie point, User player) {
         Board newBoard = new Board(player, this);
         Tie[][] newTie = new Tie[8][8];
-        for (int i = 0; i < b.getBoard().length; i++) {
-            for (int j = 0; j < b.getBoard()[i].length; j++) {
-                if (b.getBoard()[i][j] != null) {
+        Tie[][] bBoard = oldBoard.getBoard();
+        for (int i = 0; i < bBoard.length; i++) {
+            for (int j = 0; j < bBoard[i].length; j++) {
+                if (bBoard[i][j] != null) {
                     newTie[i][j] =
-                            new Tie(b.getBoard()[i][j].getMaster(), b.getBoard()[i][j].getX(), b.getBoard()[i][j].getY());
+                            new Tie(bBoard[i][j].getMaster(), bBoard[i][j].getX(), bBoard[i][j].getY());
                 }
             }
         }
         newBoard.setBoard(newTie);
         newBoard.setTurnWithTie(point, this);
-        double max_R = -1.0;
+        double maxR = -1.0;
         ArrayList<Tie> listOfPossibleTurns = new ArrayList<>();
         int[][] ties = newBoard.getPossiblePlaces(player);
         for (int i = 0; i < ties.length; i++) {
@@ -98,13 +101,13 @@ public class AI extends User{
                 }
             }
         }
-        for (Tie p: listOfPossibleTurns) {
-            double R = getInfoForClosedTies(newBoard, p);
-            if (R > max_R) {
-                max_R = R;
+        for (Tie tie: listOfPossibleTurns) {
+            double r = getInfoForClosedTies(newBoard, tie);
+            if (r > maxR) {
+                maxR = r;
             }
         }
-        return max_R;
+        return maxR;
     }
     private double evaluateTie(Tie point) {
         int x = point.getX();
@@ -138,13 +141,14 @@ public class AI extends User{
         getClosedLine(x, y, tie.isWhite(), -1, 0, closedTies, board);
     }
 
-    private void getClosedLine(int x, int y, boolean isWhite, int forX, int forY, ArrayList<Tie> closedTies, Board b) {
-        Tie[][] board = b.getBoard();
+    private void getClosedLine(int x, int y, boolean isWhite, int offsetX, int offsetY, ArrayList<Tie> closedTies,
+                               Board boardNow) {
+        Tie[][] board = boardNow.getBoard();
         int x_ = x;
         int y_ = y;
-        x_ += forX;
-        y_ += forY;
-        boolean flag = false;
+        x_ += offsetX;
+        y_ += offsetY;
+        boolean isAllyFound = false;
         ArrayList<Tie> tiesToAdd = new ArrayList<>();
         if (x_ >= 0 && y_ >= 0 && x_ < 8 && y_ < 8) {
             while (x_ >= 0 && y_ >= 0 && x_ < 8 && y_ < 8) {
@@ -152,17 +156,17 @@ public class AI extends User{
                     return;
                 }
                 if (board[x_][y_].isWhite() == isWhite) {
-                    flag = true;
+                    isAllyFound = true;
                     break;
                 }
                 if (board[x_][y_].isWhite() == !isWhite) {
                     tiesToAdd.add(board[x_][y_]);
                 }
-                x_ += forX;
-                y_ += forY;
+                x_ += offsetX;
+                y_ += offsetY;
             }
         }
-        if (flag) {
+        if (isAllyFound) {
             closedTies.addAll(tiesToAdd);
         }
     }
